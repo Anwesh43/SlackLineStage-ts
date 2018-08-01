@@ -16,6 +16,7 @@ class SlackLineStage {
         this.canvas.width = w
         this.canvas.height = h
         this.context = this.canvas.getContext('2d')
+        document.body.appendChild(this.canvas)
     }
 
     render() {
@@ -28,6 +29,7 @@ class SlackLineStage {
         this.canvas.onmousedown = () => {
             this.linkedSL.startUpdating(() => {
                 this.animator.start(() => {
+                    this.render()
                     this.linkedSL.update(() => {
                         this.animator.stop()
                     })
@@ -92,7 +94,7 @@ class SLNode {
     next : SLNode
     state : State = new State()
     constructor(private i : number) {
-
+        this.addNeighbor()
     }
 
     addNeighbor() {
@@ -106,28 +108,31 @@ class SLNode {
         context.strokeStyle = 'teal'
         context.lineWidth = Math.min(w, h) / 50
         context.lineCap = 'round'
-        const sc1 = Math.min(0.33, this.state.scale)
-        const sc2 = Math.min(0.33, Math.max(0, this.state.scale - 0.33))
-        const sc3 = Math.min(0.33, Math.max(0, this.state.scale - 0.66))
+        const sc1 = Math.min(0.33, this.state.scale) * 3
+        const sc2 = Math.min(0.33, Math.max(0, this.state.scale - 0.33)) * 3
+        const sc3 = Math.min(0.33, Math.max(0, this.state.scale - 0.66)) * 3
         const gap = w / nodes
         const size = gap / 2
         context.save()
         context.translate(this.i * gap + gap / 2, h/2)
         for (var i = 0; i < 2; i++) {
             context.save()
-            context.rotate(Math.PI/2 * sc2)
+            context.rotate(Math.PI/2 * (1 - sc2) * i)
             for (var j = 0; j < 2; j++) {
                 context.save()
-                context.translate((1 - 2 * i) * size/2 * sc1, 0)
+                context.translate((1 - 2 * j) * size/(4) * (1 - sc1), 0)
                 context.beginPath()
-                context.moveTo(0, -size/2 * sc3)
-                context.lineTo(0, size/2 * sc3)
+                context.moveTo(0, -size/2 * (1 - sc3))
+                context.lineTo(0, size/2 * (1 - sc3))
                 context.stroke()
                 context.restore()
             }
             context.restore()
         }
         context.restore()
+        if (this.next) {
+            this.next.draw(context)
+        }
     }
 
     update(cb : Function) {
