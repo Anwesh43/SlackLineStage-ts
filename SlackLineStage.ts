@@ -4,6 +4,10 @@ class SlackLineStage {
     canvas : HTMLCanvasElement = document.createElement('canvas')
 
     context : CanvasRenderingContext2D
+
+    linkedSL : LinkedSL = new LinkedSL()
+
+    animator : Animator = new Animator()
     constructor() {
         this.initCanvas()
     }
@@ -17,11 +21,18 @@ class SlackLineStage {
     render() {
         this.context.fillStyle = '#212121'
         this.context.fillRect(0, 0, w, h)
+        this.linkedSL.draw(this.context)
     }
 
     handleTap() {
         this.canvas.onmousedown = () => {
-
+            this.linkedSL.startUpdating(() => {
+                this.animator.start(() => {
+                    this.linkedSL.update(() => {
+                        this.animator.stop()
+                    })
+                })
+            })
         }
     }
 
